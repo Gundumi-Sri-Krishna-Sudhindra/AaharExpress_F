@@ -1,0 +1,152 @@
+.dashboard-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.dashboard-header h1 {
+  font-size: 2.5rem;
+  color: #ea580c;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-header p {
+  font-size: 1.1rem;
+  color: #666;
+}
+
+.dashboard-sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.dashboard-section {
+  margin-bottom: 2rem;
+}
+
+.dashboard-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.dashboard-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  height: 100%;
+}
+
+.order-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+}
+
+.order-status {
+  font-weight: 600;
+  padding: 0.3rem 0.8rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+}
+
+.order-status.processing {
+  background-color: #fff8e6;
+  color: #ffa000;
+}
+
+.order-status.completed {
+  background-color: #e8f5e9;
+  color: #388e3c;
+}
+
+.order-status.delivered {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.user-info-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.user-info-item:last-child {
+  border-bottom: none;
+}
+
+.user-info-item span:first-child {
+  font-weight: 600;
+  color: #666;
+}
+
+.user-info-item span:last-child {
+  color: #333;
+}
+
+/* Dark mode styles */
+.dark-mode .dashboard-container {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
+.dark-mode .dashboard-header h1 {
+  color: #ff7e33;
+}
+
+.dark-mode .dashboard-header p,
+.dark-mode .dashboard-section h2 {
+  color: #e0e0e0;
+}
+
+.dark-mode .dashboard-card {
+  background-color: #2a2a2a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode .order-item,
+.dark-mode .user-info-item {
+  border-bottom-color: #3a3a3a;
+}
+
+.dark-mode .user-info-item span:first-child {
+  color: #b0b0b0;
+}
+
+.dark-mode .user-info-item span:last-child {
+  color: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .dashboard-sections {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+} 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Popup from './components/Popup';
@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import OrderTracking from './components/OrderTracking';
+import Dashboard from './components/Dashboard';
 
 import Testimonials from './components/Testimonials';
 import SpecialOffers from './components/SpecialOffers';
@@ -19,6 +20,7 @@ import MenuPage from './components/MenuPage';
 import ContactUsPopup from './components/ContactUsPopup';
 import FavoritesPage from './components/FavoritesPage';
 import './App.css';
+import axios from 'axios';
 
 const App = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -197,31 +199,43 @@ const App = () => {
     return newOrder;
   };
   
-  const handleLogin = (userData) => {
-    // Ensure the user object has all required properties
-    const completeUserData = {
-      ...userData,
-      name: userData.name || 'User',
-      email: userData.email || '',
-      memberSince: userData.memberSince || new Date().toISOString(),
-      phone: userData.phone || '',
-      address: userData.address || '',
-      paymentMethods: userData.paymentMethods || [],
-      preferences: userData.preferences || {
-        emailNotifications: true,
-        smsNotifications: false,
-        marketingEmails: true,
-        dietaryPreferences: []
-      }
-    };
-    
-    setUser(completeUserData);
-    setIsAuthModalOpen(false);
+  const handleLogin = async (username, password) => {
+    try {
+      // Call the login API
+      const response = await axios.post('http://localhost:8080/api/auth/signin', {
+        username,
+        password,
+      });
+
+      // Assuming response.data contains user info and token
+      const { accessToken, username: fetchedUsername } = response.data;
+
+      // Store the token in localStorage
+      localStorage.setItem('token', accessToken);
+
+      // Fetch user data using the username
+      const userResponse = await axios.get(`http://localhost:8080/api/users/username/${fetchedUsername}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // Include the token for authentication
+        },
+      });
+
+      // Set the user data in state
+      setUser(userResponse.data);
+      setIsAuthModalOpen(false); // Close the auth modal
+      
+      // Redirect to dashboard using window.location since we don't have access to useNavigate here
+      window.location.href = '/dashboard';
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    window.location.href = '/';
   };
 
   const handlePasswordReset = (email) => {
@@ -289,6 +303,13 @@ const App = () => {
                 filterCategory={filterCategory}
               />
             } />
+            <Route path="/dashboard" element={
+              user ? (
+                <Dashboard user={user} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            } />
             <Route path="/favorites" element={
               <FavoritesPage 
                 favorites={favorites}
@@ -341,6 +362,7 @@ const App = () => {
             setIsPopupOpen(false);
             // Navigate to checkout page
           }}
+          onLogin={handleLogin}
         />
 
         <Cart 

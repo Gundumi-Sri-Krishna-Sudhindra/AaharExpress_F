@@ -142,59 +142,41 @@ const Navbar = ({
 
               {/* Enhanced User Menu */}
               <div className="user-menu-container" ref={userMenuRef}>
-                <button 
-                  className="user-icon-button" 
-                  onClick={toggleUserMenu} 
-                  aria-label="User Menu"
-                  aria-expanded={isUserMenuOpen}
-                >
-                  <span className="user-icon">👤</span>
-                  {user && <span className="user-name-short">{user.name.charAt(0)}</span>}
-                </button>
+                {user ? (
+                  <div className="logged-in-user">
+                    <Link to="/dashboard" className="user-greeting">
+                      <span className="user-greeting-text">Welcome, {user.username}</span>
+                    </Link>
+                    <button 
+                      onClick={onLogout} 
+                      className="logout-button"
+                      aria-label="Logout"
+                    >
+                      <span className="logout-icon">🚪</span>
+                      <span className="logout-text">Logout</span>
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    className="user-icon-button" 
+                    onClick={toggleUserMenu} 
+                    aria-label="User Menu"
+                    aria-expanded={isUserMenuOpen}
+                  >
+                    <span className="user-icon">👤</span>
+                  </button>
+                )}
                 
-                {isUserMenuOpen && (
+                {!user && isUserMenuOpen && (
                   <div className="user-dropdown-menu">
-                    {user ? (
-                      <>
-                        <div className="user-info">
-                          <span className="user-avatar">👤</span>
-                          <span className="user-full-name">{user.name}</span>
-                        </div>
-                        <div className="dropdown-divider"></div>
-                        <Link to="/profile" className="dropdown-item">
-                          <span className="dropdown-icon">👤</span>
-                          Edit Profile
-                        </Link>
-                        <Link to="/orders" className="dropdown-item">
-                          <span className="dropdown-icon">📦</span>
-                          Order History
-                        </Link>
-                        <Link to="/addresses" className="dropdown-item">
-                          <span className="dropdown-icon">📍</span>
-                          Saved Addresses
-                        </Link>
-                        <Link to="/payment-methods" className="dropdown-item">
-                          <span className="dropdown-icon">💳</span>
-                          Payment Methods
-                        </Link>
-                        <div className="dropdown-divider"></div>
-                        <button onClick={onLogout} className="dropdown-item logout-item">
-                          <span className="dropdown-icon">🚪</span>
-                          Logout
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <a href="#" className="dropdown-item" onClick={handleSignInClick}>
-                          <span className="dropdown-icon">🔑</span>
-                          Sign In
-                        </a>
-                        <a href="#" className="dropdown-item" onClick={handleSignupClick}>
-                          <span className="dropdown-icon">📝</span>
-                          Create Account
-                        </a>
-                      </>
-                    )}
+                    <a href="#" className="dropdown-item" onClick={handleSignInClick}>
+                      <span className="dropdown-icon">🔑</span>
+                      Sign In
+                    </a>
+                    <a href="#" className="dropdown-item" onClick={handleSignupClick}>
+                      <span className="dropdown-icon">📝</span>
+                      Create Account
+                    </a>
                   </div>
                 )}
               </div>

@@ -1,22 +1,86 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // Import useState
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import './popup.css';
 import logo from '/logo.webp';
+import { signupSchema } from '../utils/validationSchemas';
+import axios from 'axios';
 
 const SignupPopup = ({isOpen, onClose, onSignInClick}) => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [signupSuccess, setSignupSuccess] = useState("");
+    const [signupError, setSignupError] = useState("");
+    
     if(!isOpen) return null;
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if(password !== confirmPassword) {
-            alert('Passwords do not match!');
-            return;
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
+
+    const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+        try {
+            // Clear any previous messages
+            setSignupSuccess("");
+            setSignupError("");
+            
+            // Create the API request payload that matches the backend SignupRequest structure
+            const signupData = {
+                username: values.username,
+                email: values.email,
+                password: values.password,
+                role: [values.role] // Keep it as an array for now
+            };
+    
+            console.log('Sending signup data:', signupData);
+    
+            // Make API call to backend with proper headers
+            const response = await axios.post('http://localhost:8080/api/auth/signup', signupData, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                withCredentials: false
+            });
+            
+            console.log('Signup successful:', response.data);
+            
+            // Show success message directly with useState
+            setSignupSuccess('✅ Account created successfully! Redirecting to sign in page...');
+            console.log('Success message set:', '✅ Account created successfully! Redirecting to sign in page...');
+            
+            // Reset form after successful submission
+            resetForm();
+            
+            // Close popup after short delay
+            setTimeout(() => {
+                onClose();
+                // Optionally open sign in popup
+                if (onSignInClick) {
+                    onSignInClick();
+                }
+            }, 3000);
+        } catch (error) {
+            console.error('Signup error:', error);
+            
+            // Handle different error responses
+            if (error.response) {
+                console.error('Server response error:', error.response);
+                const errorMessage = error.response.data?.message || 'Failed to create account. Please try again.';
+                setSignupError(errorMessage);
+            } else if (error.request) {
+                console.error('No response error:', error.request);
+                setSignupError('No response from server. Please check your connection.');
+            } else {
+                console.error('Request setup error:', error.message);
+                setSignupError('Error sending request. Please try again.');
+            }
+        } finally {
+            setSubmitting(false);
         }
-        
     };
 
     return (
@@ -40,80 +104,150 @@ const SignupPopup = ({isOpen, onClose, onSignInClick}) => {
                     <h2 className="popup-title" style={{ fontSize: "1.5rem", textAlign: "center", margin: "0" }}>Create Account</h2>
                 </div>
         
-                <form className="popup-form" onSubmit={handleSubmit} style={{ gap: "8px" }}>
-                    <div className="form-group" style={{ marginBottom: "8px" }}>
-                        <label htmlFor="username" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Username</label>
-                        <input
-                            type="text"
-                            id="username"
-                            placeholder="Enter your username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                            style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
-                        />
-                    </div>
-                    
-                    <div className="form-group" style={{ marginBottom: "8px" }}>
-                        <label htmlFor="email" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            placeholder="Enter your email address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
-                        />
-                    </div>
-                    
-                    <div className="form-group" style={{ marginBottom: "8px" }}>
-                        <label htmlFor="password" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
-                        />
-                    </div>
-                    
-                    <div className="form-group" style={{ marginBottom: "8px" }}>
-                        <label htmlFor="confirmPassword" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Confirm Password</label>
-                        <input
-                            type="password"
-                            id="confirmPassword"
-                            placeholder="Confirm your password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
-                            style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
-                        />
-                    </div>
-                    
-                    <button 
-                        type="submit" 
-                        className="signin-button" 
-                        style={{ 
-                            padding: "10px", 
-                            fontSize: "1rem", 
-                            marginTop: "8px",
-                            width: "100%"
-                        }}
-                    >
-                        Sign Up
-                    </button>
-                    <button 
-                        type="button"
-                        className="signup-suggestion"
-                        onClick={onSignInClick}
-                        style={{ fontSize: "0.9rem", marginTop: "3px" }}
-                    >
-                        Already have an account? <span style={{ color: '#ea580c' }}>Sign In!</span>
-                    </button>
-                </form>
+                <Formik
+                    initialValues={{
+                        username: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
+                        role: 'user' // Default role
+                    }}
+                    validationSchema={signupSchema}
+                    onSubmit={handleSubmit}
+                >
+                    {({ isSubmitting }) => (
+                        <Form className="popup-form" style={{ gap: "8px" }}>
+                            {signupError && (
+                                <div className="error-message">
+                                    {signupError}
+                                </div>
+                            )}
+                            
+                            {signupSuccess && (
+                                <div className="success-message">
+                                    {signupSuccess}
+                                </div>
+                            )}
+
+                            <div className="form-group" style={{ marginBottom: "8px" }}>
+                                <label htmlFor="username" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Username</label>
+                                <Field
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    placeholder="Enter your username"
+                                    style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
+                                    disabled={!!signupSuccess}
+                                />
+                                <ErrorMessage name="username" component="div" className="error-text" style={{ color: 'red' }} />
+                            </div>
+                            
+                            <div className="form-group" style={{ marginBottom: "8px" }}>
+                                <label htmlFor="email" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Email</label>
+                                <Field
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="Enter your email address"
+                                    style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
+                                    disabled={!!signupSuccess}
+                                />
+                                <ErrorMessage name="email" component="div" className="error-text" style={{ color: 'red' }} />
+                            </div>
+                            
+                            <div className="form-group" style={{ marginBottom: "8px" }}>
+                                <label htmlFor="password" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Password</label>
+                                <div className="password-input-container">
+                                    <Field
+                                        type={showPassword ? "text" : "password"}
+                                        id="password"
+                                        name="password"
+                                        placeholder="Enter your password"
+                                        style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
+                                        disabled={!!signupSuccess}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="toggle-password-button"
+                                        onClick={togglePasswordVisibility}
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
+                                        disabled={!!signupSuccess}
+                                    >
+                                        {showPassword ? "👁️" : "👁️‍🗨️"}
+                                    </button>
+                                </div>
+                                <ErrorMessage name="password" component="div" className="error-text" style={{ color: 'red' }} />
+                            </div>
+                            
+                            <div className="form-group" style={{ marginBottom: "8px" }}>
+                                <label htmlFor="confirmPassword" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Confirm Password</label>
+                                <div className="password-input-container">
+                                    <Field
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        placeholder="Confirm your password"
+                                        style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
+                                        disabled={!!signupSuccess}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="toggle-password-button"
+                                        onClick={toggleConfirmPasswordVisibility}
+                                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                                        disabled={!!signupSuccess}
+                                    >
+                                        {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+                                    </button>
+                                </div>
+                                <ErrorMessage name="confirmPassword" component="div" className="error-text" style={{ color: 'red' }} />
+                            </div>
+
+                            <div className="form-group" style={{ marginBottom: "8px" }}>
+                                <label htmlFor="role" className="form-label" style={{ fontSize: "1rem", marginBottom: "3px" }}>Role</label>
+                                <Field 
+                                    as="select" 
+                                    id="role" 
+                                    name="role" 
+                                    style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
+                                    disabled={!!signupSuccess}
+                                >
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                </Field>
+                                <ErrorMessage name="role" component="div" className="error-text" style={{ color: 'red' }} />
+                            </div>
+                            
+                            <button 
+                                type="submit" 
+                                className="signin-button" 
+                                style={{ 
+                                    padding: "10px", 
+                                    fontSize: "1rem", 
+                                    marginTop: "8px",
+                                    width: "100%",
+                                    backgroundColor: "#ea580c",
+                                    color: "white", 
+                                    border: "none",
+                                    borderRadius: "4px",
+                                    cursor: "pointer"
+                                }}
+                                disabled={isSubmitting || !!signupSuccess}
+                            >
+                                {isSubmitting ? 'Creating Account...' : (signupSuccess ? 'Account Created!' : 'Sign Up')}
+                            </button>
+                            <button 
+                                type="button"
+                                className="signup-suggestion"
+                                onClick={onSignInClick}
+                                style={{ fontSize: "0.9rem", marginTop: "3px" }}
+                                disabled={!!signupSuccess}
+                            >
+                                Already have an account? <span style={{ color: '#ea580c' }}>Sign In!</span>
+                            </button>
+                        </Form>
+                    )}
+                </Formik>
             </div>
         </div>
     );
