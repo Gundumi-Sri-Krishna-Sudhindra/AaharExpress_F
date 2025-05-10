@@ -12,6 +12,7 @@ import OrderTracking from './components/OrderTracking';
 import Dashboard from './components/Dashboard';
 import UserProfile from './components/UserProfile';
 import AccountSettings from './components/AccountSettings';
+import RoleBasedRoute from './components/RoleBasedRoute';
 
 import Testimonials from './components/Testimonials';
 import SpecialOffers from './components/SpecialOffers';
@@ -481,43 +482,75 @@ const App = () => {
                 filterCategory={filterCategory}
               />
             } />
+            
+            {/* Regular dashboard - will show appropriate role dashboard based on user role */}
             <Route path="/dashboard" element={
               <PrivateRoute>
                 <Dashboard user={user} />
               </PrivateRoute>
             } />
+            
+            {/* Role-specific dashboard routes */}
+            <Route path="/admin-dashboard" element={
+              <RoleBasedRoute roles="ADMIN" redirectTo="/">
+                <Dashboard user={user} />
+              </RoleBasedRoute>
+            } />
+            
+            <Route path="/restaurant-dashboard" element={
+              <RoleBasedRoute roles="RESTAURANT" redirectTo="/">
+                <Dashboard user={user} />
+              </RoleBasedRoute>
+            } />
+            
+            <Route path="/customer-dashboard" element={
+              <RoleBasedRoute roles="CUSTOMER" redirectTo="/">
+                <Dashboard user={user} />
+              </RoleBasedRoute>
+            } />
+            
+            <Route path="/delivery-dashboard" element={
+              <RoleBasedRoute roles={["DELIVERY_AGENT", "DELIVERY"]} redirectTo="/">
+                <Dashboard user={user} />
+              </RoleBasedRoute>
+            } />
+            
             <Route path="/favorites" element={
-              <FavoritesPage 
-                favorites={favorites}
-                onRemoveFavorite={handleRemoveFromFavorites}
-                onAddToCart={handleAddToCart}
-              />
+              <PrivateRoute>
+                <FavoritesPage 
+                  favorites={favorites}
+                  onRemoveFavorite={handleRemoveFromFavorites}
+                  onAddToCart={handleAddToCart}
+                />
+              </PrivateRoute>
             } />
             <Route path="/checkout" element={
-              <Checkout 
-                cartItems={cartItems} 
-                onCheckout={handleCheckout}
-                onQuantityChange={handleQuantityChange}
-                onRemoveItem={handleRemoveFromCart}
-                user={user}
-              />
+              <PrivateRoute>
+                <Checkout 
+                  cartItems={cartItems} 
+                  onCheckout={handleCheckout}
+                  onQuantityChange={handleQuantityChange}
+                  onRemoveItem={handleRemoveFromCart}
+                  user={user}
+                />
+              </PrivateRoute>
             } />
             <Route path="/tracking" element={
-              <OrderTracking 
-                order={activeOrder} 
-                onBackToHome={() => setActiveOrder(null)} 
-              />
+              <PrivateRoute>
+                <OrderTracking 
+                  order={activeOrder} 
+                  onBackToHome={() => setActiveOrder(null)} 
+                />
+              </PrivateRoute>
             } />
             <Route path="/profile" element={
-              user ? (
+              <PrivateRoute>
                 <UserProfile 
                   user={user} 
                   orders={orders} 
                   onViewOrder={handleViewOrder} 
                 />
-              ) : (
-                <Navigate to="/" replace />
-              )
+              </PrivateRoute>
             } />
             <Route path="/account-settings" element={
               <PrivateRoute>
@@ -563,7 +596,7 @@ const App = () => {
 
         
 
-        <PasswordResetPopup 
+        <PasswordResetPopup
           isOpen={isPasswordResetOpen}
           onClose={() => setIsPasswordResetOpen(false)}
           onBackToSignIn={() => {

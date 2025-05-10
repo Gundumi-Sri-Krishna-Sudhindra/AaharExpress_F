@@ -193,6 +193,73 @@ const authService = {
     return false;
   },
   
+  // Check if user has a specific role
+  hasRole: (role) => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return false;
+      
+      const userData = JSON.parse(userStr);
+      if (!userData.roles || !Array.isArray(userData.roles)) return false;
+      
+      // Normalize the role strings for comparison
+      const normalizedRoles = userData.roles.map(r => {
+        if (typeof r !== 'string') return '';
+        // Remove ROLE_ prefix if it exists and convert to uppercase for comparison
+        return r.replace('ROLE_', '').toUpperCase();
+      });
+      
+      // Normalize the requested role
+      const normalizedRole = role.replace('ROLE_', '').toUpperCase();
+      
+      return normalizedRoles.includes(normalizedRole);
+    } catch (error) {
+      console.error('Error checking role:', error);
+      return false;
+    }
+  },
+  
+  // Check if user is an Admin
+  isAdmin: () => {
+    return authService.hasRole('ADMIN');
+  },
+  
+  // Check if user is a Restaurant
+  isRestaurant: () => {
+    return authService.hasRole('RESTAURANT');
+  },
+  
+  // Check if user is a Customer
+  isCustomer: () => {
+    return authService.hasRole('CUSTOMER');
+  },
+  
+  // Check if user is a Delivery Agent
+  isDeliveryAgent: () => {
+    return authService.hasRole('DELIVERY_AGENT');
+  },
+  
+  // Get current user's roles
+  getUserRoles: () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return [];
+      
+      const userData = JSON.parse(userStr);
+      if (!userData.roles || !Array.isArray(userData.roles)) return [];
+      
+      // Normalize role names
+      return userData.roles.map(role => {
+        if (typeof role !== 'string') return '';
+        const normalizedRole = role.replace('ROLE_', '');
+        return normalizedRole.charAt(0).toUpperCase() + normalizedRole.slice(1).toLowerCase();
+      }).filter(role => role !== '');
+    } catch (error) {
+      console.error('Error getting user roles:', error);
+      return [];
+    }
+  },
+  
   // Add token to axios headers for all requests
   setupAxiosInterceptors: () => {
     console.log('Setting up axios interceptors');

@@ -29,7 +29,10 @@ export const signupSchema = Yup.object().shape({
     .required('Password is required'),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref('password')], 'Passwords must match')
-    .required('Confirm password is required')
+    .required('Confirm password is required'),
+  role: Yup.string()
+    .oneOf(['user', 'admin', 'customer', 'restaurant', 'delivery_agent'], 'Invalid role selected')
+    .required('Role is required')
 });
 
 export const donationSchema = Yup.object().shape({

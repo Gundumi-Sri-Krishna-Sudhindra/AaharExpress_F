@@ -110,7 +110,7 @@ const SignupPopup = ({isOpen, onClose, onSignInClick}) => {
                         email: '',
                         password: '',
                         confirmPassword: '',
-                        role: 'user' // Default role
+                        role: 'customer' // Default role set to customer
                     }}
                     validationSchema={signupSchema}
                     onSubmit={handleSubmit}
@@ -212,7 +212,10 @@ const SignupPopup = ({isOpen, onClose, onSignInClick}) => {
                                     style={{ padding: "8px 10px", fontSize: "1rem", width: "100%" }}
                                     disabled={!!signupSuccess}
                                 >
-                                    <option value="user">User</option>
+
+                                    <option value="customer">Customer</option>
+                                    <option value="restaurant">Restaurant</option>
+                                    <option value="delivery_agent">Delivery Agent</option>
                                     <option value="admin">Admin</option>
                                 </Field>
                                 <ErrorMessage name="role" component="div" className="error-text" style={{ color: 'red' }} />

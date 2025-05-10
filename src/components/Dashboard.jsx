@@ -3,6 +3,10 @@ import './Dashboard.css';
 import userService from '../services/userService';
 import authService from '../services/authService';
 import { checkApiEndpoints } from '../utils/apiCheck';
+import AdminDashboard from './AdminDashboard';
+import RestaurantDashboard from './RestaurantDashboard';
+import CustomerDashboard from './CustomerDashboard';
+import DeliveryAgentDashboard from './DeliveryAgentDashboard';
 
 const Dashboard = ({ user: initialUser }) => {
   const [user, setUser] = useState(initialUser || null);
@@ -157,7 +161,8 @@ const Dashboard = ({ user: initialUser }) => {
                 isAuthenticated: authService.isAuthenticated(),
                 hasToken: !!localStorage.getItem('token'),
                 hasUserData: !!localStorage.getItem('user'),
-                currentPath: window.location.pathname
+                currentPath: window.location.pathname,
+                roles: authService.getUserRoles()
               }, null, 2)}
             </pre>
           </div>
@@ -166,115 +171,57 @@ const Dashboard = ({ user: initialUser }) => {
     );
   };
 
+  // Render the appropriate dashboard based on user role
+  const renderRoleDashboard = () => {
+    // Check for admin role first
+    if (authService.isAdmin()) {
+      console.log('Rendering Admin Dashboard');
+      return <AdminDashboard user={user} />;
+    }
+    
+    // Check for restaurant role
+    if (authService.isRestaurant()) {
+      console.log('Rendering Restaurant Dashboard');
+      return <RestaurantDashboard user={user} />;
+    }
+    
+    // Check for delivery agent role
+    if (authService.isDeliveryAgent()) {
+      console.log('Rendering Delivery Agent Dashboard');
+      return <DeliveryAgentDashboard user={user} />;
+    }
+    
+    // Default to customer dashboard
+    console.log('Rendering Customer Dashboard');
+    return <CustomerDashboard user={user} />;
+  };
+
+  // Debug toggle button to be displayed at the top right of any dashboard
+  const DebugToggle = () => (
+    <button 
+      onClick={() => setDebugMode(!debugMode)} 
+      className="debug-toggle"
+      style={{ 
+        position: 'absolute', 
+        top: '10px', 
+        right: '10px',
+        background: 'none',
+        border: 'none',
+        fontSize: '20px',
+        cursor: 'pointer',
+        opacity: 0.5
+      }}
+    >
+      🛠️
+    </button>
+  );
+
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Welcome, {user.fullName || user.username || user.name || 'User'}!</h1>
-        <p>Manage your account and orders from your personalized dashboard</p>
-        <button 
-          onClick={() => setDebugMode(!debugMode)} 
-          className="debug-toggle"
-          style={{ 
-            position: 'absolute', 
-            top: '10px', 
-            right: '10px',
-            background: 'none',
-            border: 'none',
-            fontSize: '20px',
-            cursor: 'pointer',
-            opacity: 0.5
-          }}
-        >
-          🛠️
-        </button>
-      </div>
-      
-      <div className="dashboard-sections">
-        <div className="dashboard-section">
-          <h2>Recent Orders</h2>
-          <div className="dashboard-card">
-            {orders && orders.length > 0 ? (
-              <ul className="order-list">
-                {orders.slice(0, 3).map(order => (
-                  <li key={order.id} className="order-item">
-                    <span>Order #{order.id}</span>
-                    <span>{new Date(order.createdAt || order.timestamp).toLocaleDateString()}</span>
-                    <span className={`order-status ${order.status?.toLowerCase() || 'processing'}`}>
-                      {order.status || 'Processing'}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>You have no recent orders.</p>
-            )}
-            <div className="dashboard-action">
-              <button className="view-all-button">View All Orders</button>
-            </div>
-          </div>
-        </div>
-        
-        <div className="dashboard-section">
-          <h2>Account Info</h2>
-          <div className="dashboard-card">
-            <div className="user-info-item">
-              <span>Username:</span>
-              <span>{user.username || 'N/A'}</span>
-            </div>
-            <div className="user-info-item">
-              <span>Email:</span>
-              <span>{user.email || 'N/A'}</span>
-            </div>
-            <div className="user-info-item">
-              <span>Full Name:</span>
-              <span>{user.fullName || user.name || 'Not provided'}</span>
-            </div>
-            <div className="user-info-item">
-              <span>Phone:</span>
-              <span>{user.mobileNumber || user.phone || 'Not provided'}</span>
-            </div>
-            {user.address && (
-              <div className="user-info-item">
-                <span>Address:</span>
-                <span>{user.address}</span>
-              </div>
-            )}
-            <div className="dashboard-action">
-              <button 
-                className="edit-profile-button"
-                onClick={() => window.location.href = '/account-settings'}
-              >
-                Edit Profile
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div className="dashboard-section">
-          <h2>Delivery Addresses</h2>
-          <div className="dashboard-card">
-            {user.addresses && user.addresses.length > 0 ? (
-              <ul className="address-list">
-                {user.addresses.map((address, index) => (
-                  <li key={index} className="address-item">
-                    <div className="address-type">{address.type || 'Address ' + (index + 1)}</div>
-                    <div className="address-text">{address.street}, {address.city}, {address.state} {address.zipCode}</div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No saved addresses found.</p>
-            )}
-            <div className="dashboard-action">
-              <button className="add-address-button">Add New Address</button>
-            </div>
-          </div>
-        </div>
-        
-        {/* Debug panel */}
-        {renderDebugPanel()}
-      </div>
-    </div>
+    <>
+      {renderRoleDashboard()}
+      <DebugToggle />
+      {renderDebugPanel()}
+    </>
   );
 };
 

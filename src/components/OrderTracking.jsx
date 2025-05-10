@@ -12,6 +12,12 @@ const OrderTracking = ({ order, onBackToHome }) => {
     lng: -74.006
   });
   
+  // Rating popup state
+  const [showRatingPopup, setShowRatingPopup] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  
   // Simulation of order progress
   useEffect(() => {
     if (!order) {
@@ -109,8 +115,50 @@ const OrderTracking = ({ order, onBackToHome }) => {
   
   // Function to handle rating button click
   const handleRateExperience = () => {
-    // Navigate to rating page with order ID as parameter
-    navigate(`/rating/${order.id}`);
+    setShowRatingPopup(true);
+  };
+  
+  // Function to close rating popup
+  const closeRatingPopup = () => {
+    setShowRatingPopup(false);
+    
+    // Reset rating form if it wasn't submitted
+    if (!ratingSubmitted) {
+      setRating(0);
+      setFeedback('');
+    }
+  };
+  
+  // Function to handle star rating selection
+  const handleStarClick = (selectedRating) => {
+    setRating(selectedRating);
+  };
+  
+  // Function to handle feedback input
+  const handleFeedbackChange = (e) => {
+    setFeedback(e.target.value);
+  };
+  
+  // Function to submit rating
+  const submitRating = () => {
+    // Here you would typically send the rating data to your backend
+    console.log('Rating submitted:', {
+      orderId: order.id,
+      rating,
+      feedback
+    });
+    
+    // Show success message
+    setRatingSubmitted(true);
+    
+    // Close popup after delay
+    setTimeout(() => {
+      setShowRatingPopup(false);
+      // Reset for next time
+      setRating(0);
+      setFeedback('');
+      setRatingSubmitted(false);
+    }, 2000);
   };
   
   if (!order) {
@@ -158,7 +206,7 @@ const OrderTracking = ({ order, onBackToHome }) => {
     const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const deliveryFee = order.deliveryFee !== undefined ? order.deliveryFee : (subtotal > 30 ? 0 : 4.99);
     
-    // If tax is provided, use it; otherwise calculate it as 8% of subtotal
+    // If tax is provided, use it; otherwise calculate it as a8% of subtotal
     const tax = order.tax !== undefined ? order.tax : (subtotal * 0.08);
     
     return {
@@ -316,6 +364,57 @@ const OrderTracking = ({ order, onBackToHome }) => {
           </div>
         </div>
       </div>
+      
+      {/* Rating Popup */}
+      {showRatingPopup && (
+        <div className="rating-popup-overlay">
+          <div className="rating-popup">
+            <button className="close-btn" onClick={closeRatingPopup}>×</button>
+            
+            {!ratingSubmitted ? (
+              <>
+                <h2>Rate Your Experience</h2>
+                <div className="rating-stars">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span 
+                      key={star} 
+                      className={`star ${rating >= star ? 'active' : ''}`}
+                      onClick={() => handleStarClick(star)}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="feedback-form">
+                  <label htmlFor="feedback">Share your feedback (optional):</label>
+                  <textarea 
+                    id="feedback" 
+                    value={feedback}
+                    onChange={handleFeedbackChange}
+                    placeholder="Tell us about your experience..."
+                    rows="4"
+                  ></textarea>
+                </div>
+                
+                <button 
+                  className="btn btn-primary submit-rating" 
+                  onClick={submitRating}
+                  disabled={rating === 0}
+                >
+                  Submit Rating
+                </button>
+              </>
+            ) : (
+              <div className="rating-success">
+                <div className="success-icon">✓</div>
+                <h3>Thank You!</h3>
+                <p>Your feedback has been submitted successfully.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
