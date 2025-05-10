@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://aahar-express-b.vercel.app/api';
+const API_BASE_URL = 'https://storied-puppy-a42d38.netlify.app/api';
 
 // Debug function to log authentication state
 const logAuthState = () => {
