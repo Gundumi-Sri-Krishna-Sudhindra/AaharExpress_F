@@ -104,6 +104,108 @@
   color: #333;
 }
 
+/* Loading and Error States */
+.dashboard-loading,
+.dashboard-error {
+  max-width: 600px;
+  margin: 5rem auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dashboard-error h2 {
+  color: #ea580c;
+  margin-bottom: 1rem;
+}
+
+.dashboard-error button {
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #ea580c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dashboard-error button:hover {
+  background-color: #c2410c;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #ea580c;
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Address List */
+.address-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.address-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid #f2f2f2;
+}
+
+.address-item:last-child {
+  border-bottom: none;
+}
+
+.address-type {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.address-text {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Dashboard Actions */
+.dashboard-action {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.view-all-button,
+.edit-profile-button,
+.add-address-button {
+  padding: 0.6rem 1.2rem;
+  background-color: #ea580c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-all-button:hover,
+.edit-profile-button:hover,
+.add-address-button:hover {
+  background-color: #c2410c;
+  transform: translateY(-2px);
+}
+
 /* Dark mode styles */
 .dark-mode .dashboard-container {
   background-color: #1a1a1a;
@@ -119,22 +221,51 @@
   color: #e0e0e0;
 }
 
-.dark-mode .dashboard-card {
+.dark-mode .dashboard-card,
+.dark-mode .dashboard-loading,
+.dark-mode .dashboard-error {
   background-color: #2a2a2a;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: #f0f0f0;
 }
 
 .dark-mode .order-item,
-.dark-mode .user-info-item {
+.dark-mode .user-info-item,
+.dark-mode .address-item {
   border-bottom-color: #3a3a3a;
 }
 
-.dark-mode .user-info-item span:first-child {
+.dark-mode .user-info-item span:first-child,
+.dark-mode .address-type {
   color: #b0b0b0;
 }
 
-.dark-mode .user-info-item span:last-child {
+.dark-mode .user-info-item span:last-child,
+.dark-mode .address-text {
   color: #f0f0f0;
+}
+
+.dark-mode .spinner {
+  border-color: #3a3a3a;
+  border-top-color: #ff7e33;
+}
+
+.dark-mode .dashboard-error h2 {
+  color: #ff7e33;
+}
+
+.dark-mode .dashboard-error button,
+.dark-mode .view-all-button,
+.dark-mode .edit-profile-button,
+.dark-mode .add-address-button {
+  background-color: #ff7e33;
+}
+
+.dark-mode .dashboard-error button:hover,
+.dark-mode .view-all-button:hover,
+.dark-mode .edit-profile-button:hover,
+.dark-mode .add-address-button:hover {
+  background-color: #ea580c;
 }
 
 @media (max-width: 768px) {

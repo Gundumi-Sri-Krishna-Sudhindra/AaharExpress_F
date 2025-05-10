@@ -6,6 +6,8 @@ import SignupPopup from './SignupPopup';
 import PasswordResetPopup from './PasswordResetPopup';
 import { loginSchema } from '../utils/validationSchemas';
 import axios from 'axios';
+import userService from '../services/userService';
+import authService from '../services/authService';
 
 const Popup = ({isOpen, onClose, onLogin}) => {
     const [showSignup, setShowSignup] = useState(false);
@@ -45,46 +47,66 @@ const Popup = ({isOpen, onClose, onLogin}) => {
             setLoginError('');
             setLoginSuccess('');
             
-            // Make API call for authentication
-            const response = await axios.post('http://localhost:8080/api/auth/signin', {
-                username: values.email, // Assuming email is used as username
-                password: values.password,
-            });
+            console.log('Popup: Login attempt for:', values.username);
+            // Step 1: Use authService for login to get token
+            const response = await authService.login(values.username, values.password);
+            console.log('Popup: Login successful, response:', response);
 
             // Show success message
-            setLoginSuccess('✅ Successfully signed in! Redirecting to dashboard...');
-            console.log('Login success message set:', '✅ Successfully signed in! Redirecting to dashboard...');
+            setLoginSuccess('✅ Successfully signed in! Loading your profile...');
+            console.log('Popup: Login success message set');
             
             // If onLogin callback exists, pass the login data
             if (onLogin) {
+                console.log('Popup: Using parent onLogin callback');
                 // Wait for a moment to show the success message
                 setTimeout(() => {
-                    onLogin(values.email, values.password);
+                    onLogin(values.username, values.password);
                 }, 2000);
             } else {
                 // If no callback, handle redirect here
-                const { accessToken, username } = response.data;
-                localStorage.setItem('token', accessToken);
+                const username = response.username || values.username;
                 
-                // Get user details
-                const userResponse = await axios.get(`http://localhost:8080/api/users/username/${username}`, {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                });
-                
-                // Store user in local storage
-                localStorage.setItem('user', JSON.stringify(userResponse.data));
-                
-                // Wait for a moment to show the success message, then redirect
-                setTimeout(() => {
-                    onClose();
-                    window.location.href = '/dashboard';
-                }, 2000);
+                try {
+                    console.log('Popup: Fetching user details for:', username);
+                    // Step 2: Fetch detailed user data
+                    const userData = await userService.fetchUserAfterLogin(username);
+                    console.log('Popup: User details fetched successfully:', userData);
+                    
+                    // Wait for a moment to show the success message, then redirect
+                    setTimeout(() => {
+                        console.log('Popup: Redirecting to home page...');
+                        onClose();
+                        // Use direct DOM approach for reliability
+                        window.location.href = '/';
+                    }, 2000);
+                } catch (userError) {
+                    console.error('Popup: Error fetching user details:', userError);
+                    
+                    // Even if we couldn't get detailed user info, we can still use basic info from login response
+                    if (response && response.username) {
+                        const basicUserData = {
+                            id: response.id || 0,
+                            username: response.username,
+                            email: response.email || '',
+                            roles: response.roles || ['ROLE_USER']
+                        };
+                        
+                        console.log('Popup: Using basic user data from login response:', basicUserData);
+                        localStorage.setItem('user', JSON.stringify(basicUserData));
+                        
+                        setTimeout(() => {
+                            onClose();
+                            window.location.href = '/';
+                        }, 2000);
+                    } else {
+                        setLoginError('Error loading user data. Please try again.');
+                    }
+                }
             }
         } catch (error) {
-            console.error('Login error:', error);
-            setLoginError('Invalid email or password');
+            console.error('Popup: Login error:', error);
+            setLoginError(error.response?.data?.message || 'Invalid username or password');
         } finally {
             setSubmitting(false);
         }
@@ -103,7 +125,7 @@ const Popup = ({isOpen, onClose, onLogin}) => {
                         </div>
                 
                         <Formik
-                            initialValues={{ email: '', password: '', rememberMe: false }}
+                            initialValues={{ username: '', password: '', rememberMe: false }}
                             validationSchema={loginSchema}
                             onSubmit={handleLogin}
                         >
@@ -122,16 +144,16 @@ const Popup = ({isOpen, onClose, onLogin}) => {
                                     )}
                                     
                                     <div className="form-group">
-                                        <label htmlFor="email" className="form-label form-label-xl">Email</label>
+                                        <label htmlFor="username" className="form-label form-label-xl">Username</label>
                                         <Field
-                                            type="email"
-                                            id="email"
-                                            name="email"
+                                            type="text"
+                                            id="username"
+                                            name="username"
                                             className="input-large"
-                                            placeholder="Enter your email"
+                                            placeholder="Enter your username"
                                             disabled={!!loginSuccess}
                                         />
-                                        <ErrorMessage name="email" component="div" className="error-text" />
+                                        <ErrorMessage name="username" component="div" className="error-text" />
                                     </div>
                                     
                                     <div className="form-group">

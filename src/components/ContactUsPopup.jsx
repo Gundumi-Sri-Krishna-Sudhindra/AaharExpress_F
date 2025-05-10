@@ -178,7 +178,7 @@ const ContactUsPopup = ({ isOpen, onClose }) => {
                   <span className="contact-icon">📞</span>
                   <div className="contact-details">
                     <h3>Call Us</h3>
-                    <p>+91 1234567890</p>
+                    <p>+91 9866259932</p>
                     <p className="contact-note">Available 24/7 for customer support</p>
                   </div>
                 </div>
@@ -187,7 +187,7 @@ const ContactUsPopup = ({ isOpen, onClose }) => {
                   <span className="contact-icon">✉️</span>
                   <div className="contact-details">
                     <h3>Email Us</h3>
-                    <p>support@aaharexpress.com</p>
+                    <p>aaharexpressindia@gmail.com</p>
                     <p className="contact-note">We'll respond within 24 hours</p>
                   </div>
                 </div>

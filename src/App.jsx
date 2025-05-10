@@ -10,6 +10,7 @@ import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import OrderTracking from './components/OrderTracking';
 import Dashboard from './components/Dashboard';
+import UserProfile from './components/UserProfile';
 
 import Testimonials from './components/Testimonials';
 import SpecialOffers from './components/SpecialOffers';
@@ -21,6 +22,25 @@ import ContactUsPopup from './components/ContactUsPopup';
 import FavoritesPage from './components/FavoritesPage';
 import './App.css';
 import axios from 'axios';
+import userService from './services/userService';
+import authService from './services/authService';
+
+// Add a PrivateRoute component for protected routes
+const PrivateRoute = ({ children }) => {
+  console.log('PrivateRoute check');
+  const isAuthenticated = authService.isAuthenticated();
+  console.log('PrivateRoute - isAuthenticated:', isAuthenticated);
+  
+  if (!isAuthenticated) {
+    console.log('PrivateRoute - not authenticated, redirecting to home');
+    // Also clear any stale user data from localStorage
+    authService.logout();
+    return <Navigate to="/" replace />;
+  }
+  
+  console.log('PrivateRoute - authenticated, rendering children');
+  return children;
+};
 
 const App = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -32,68 +52,117 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [activeOrder, setActiveOrder] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [darkMode, setDarkMode] = useState(false);
   const [favorites, setFavorites] = useState([]);
 
-  // Load data from localStorage
+  // Debug user state changes
   useEffect(() => {
-    const savedCart = localStorage.getItem('cartItems');
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error("Error parsing saved cart:", error);
-        setCartItems([]);
+    console.log("App - User state changed:", user);
+  }, [user]);
+
+  // Check authentication status and load data from localStorage
+  useEffect(() => {
+    const checkAuthAndLoadData = async () => {
+      console.log('App mounted, checking authentication status');
+      console.log('Current path:', window.location.pathname);
+      
+      // Try to load user from localStorage first
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          console.log('Found user data in localStorage:', userData.username);
+          setUser(userData);
+        } catch (error) {
+          console.error("Error parsing saved user:", error);
+          // Clear corrupted user data
+          localStorage.removeItem('user');
+        }
       }
-    }
-    
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      try {
-        setFavorites(JSON.parse(savedFavorites));
-      } catch (error) {
-        console.error("Error parsing saved favorites:", error);
-        setFavorites([]);
+      
+      // Check if user is authenticated
+      if (authService.isAuthenticated()) {
+        try {
+          console.log('Token found, verifying and loading user data');
+          // Try to get user data from API
+          const userData = await userService.getCurrentUser();
+          console.log('User data loaded successfully from API:', userData);
+          setUser(userData);
+          // Update localStorage with fresh data
+          localStorage.setItem('user', JSON.stringify(userData));
+        } catch (error) {
+          console.error("Failed to fetch user data from API:", error);
+          // If API call fails but we have user data from localStorage, keep using that
+          // Do not clear user state here, as it would cause unnecessary re-renders
+          // Just keep using the data from localStorage that we've already set above
+        }
+      } else {
+        console.log('No valid authentication found');
+        // Clear any stale user data if not authenticated
+        if (user) {
+          console.log('Clearing user state as not authenticated');
+          setUser(null);
+        }
       }
-    }
+      
+      // Load other saved data
+      loadSavedData();
+    };
     
-    // Load favoriteItems for backwards compatibility with your FavoritesPage component
-    const savedFavoriteIds = localStorage.getItem('favoriteItems');
-    if (savedFavoriteIds) {
-      try {
-        // This ensures that the old format is handled properly
-        localStorage.setItem('favoriteItems', savedFavoriteIds);
-      } catch (error) {
-        console.error("Error handling saved favorite IDs:", error);
+    const loadSavedData = () => {
+      // Load cart items
+      const savedCart = localStorage.getItem('cartItems');
+      if (savedCart) {
+        try {
+          setCartItems(JSON.parse(savedCart));
+        } catch (error) {
+          console.error("Error parsing saved cart:", error);
+          setCartItems([]);
+        }
       }
-    }
-    
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error("Error parsing saved user:", error);
+      
+      // Load favorites
+      const savedFavorites = localStorage.getItem('favorites');
+      if (savedFavorites) {
+        try {
+          setFavorites(JSON.parse(savedFavorites));
+        } catch (error) {
+          console.error("Error parsing saved favorites:", error);
+          setFavorites([]);
+        }
       }
-    }
-    
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      try {
-        setOrders(JSON.parse(savedOrders));
-      } catch (error) {
-        console.error("Error parsing saved orders:", error);
-        setOrders([]);
+      
+      // Load favoriteItems for backwards compatibility
+      const savedFavoriteIds = localStorage.getItem('favoriteItems');
+      if (savedFavoriteIds) {
+        try {
+          localStorage.setItem('favoriteItems', savedFavoriteIds);
+        } catch (error) {
+          console.error("Error handling saved favorite IDs:", error);
+        }
       }
-    }
-    
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(savedDarkMode);
-    if (savedDarkMode) {
-      document.body.classList.add('dark-mode');
-    }
+      
+      // Load orders
+      const savedOrders = localStorage.getItem('orders');
+      if (savedOrders) {
+        try {
+          setOrders(JSON.parse(savedOrders));
+        } catch (error) {
+          console.error("Error parsing saved orders:", error);
+          setOrders([]);
+        }
+      }
+      
+      // Load dark mode preference
+      const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+      setDarkMode(savedDarkMode);
+      if (savedDarkMode) {
+        document.body.classList.add('dark-mode');
+      }
+    };
+
+    checkAuthAndLoadData();
   }, []);
 
   // Save data to localStorage
@@ -201,41 +270,69 @@ const App = () => {
   
   const handleLogin = async (username, password) => {
     try {
-      // Call the login API
-      const response = await axios.post('http://localhost:8080/api/auth/signin', {
-        username,
-        password,
-      });
+      console.log('Login attempt for:', username);
+      // Step 1: Use authService for login to get token
+      const response = await authService.login(username, password);
+      console.log('Login successful, response:', response);
 
-      // Assuming response.data contains user info and token
-      const { accessToken, username: fetchedUsername } = response.data;
-
-      // Store the token in localStorage
-      localStorage.setItem('token', accessToken);
-
-      // Fetch user data using the username
-      const userResponse = await axios.get(`http://localhost:8080/api/users/username/${fetchedUsername}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Include the token for authentication
-        },
-      });
-
-      // Set the user data in state
-      setUser(userResponse.data);
-      setIsAuthModalOpen(false); // Close the auth modal
-      
-      // Redirect to dashboard using window.location since we don't have access to useNavigate here
-      window.location.href = '/dashboard';
+      try {
+        // Step 2: Fetch detailed user data using the username
+        console.log('Fetching user details for:', response.username || username);
+        const userData = await userService.fetchUserAfterLogin(response.username || username);
+        console.log('User details fetched successfully:', userData);
+        
+        // Step 3: Set the user data in state and localStorage
+        setUser(userData);
+        
+        // Step 4: Close the auth modal
+        setIsAuthModalOpen(false);
+        
+        // Step 5: Show success message and redirect to dashboard instead of home
+        console.log('Authentication complete, redirecting to dashboard');
+        
+        // Force immediate redirect to dashboard - using direct DOM approach for reliability
+        window.location.href = '/dashboard';
+      } catch (userError) {
+        console.error("Error fetching user details:", userError);
+        
+        // Even if we couldn't get detailed user info, we can still use basic info from login response
+        if (response && response.username) {
+          const basicUserData = {
+            id: response.id || 0,
+            username: response.username,
+            email: response.email || '',
+            roles: response.roles || ['ROLE_USER']
+          };
+          
+          console.log('Using basic user data from login response:', basicUserData);
+          setUser(basicUserData);
+          localStorage.setItem('user', JSON.stringify(basicUserData));
+          
+          // Close the auth modal and redirect to dashboard
+          setIsAuthModalOpen(false);
+          window.location.href = '/dashboard';
+        } else {
+          alert("Login successful but couldn't fetch user details. Please try refreshing the page.");
+        }
+      }
     } catch (error) {
       console.error("Login failed:", error);
+      alert("Login failed. Please check your username and password.");
     }
   };
 
   const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    window.location.href = '/';
+    console.log("App - Logout called");
+    // Display a confirmation dialog before logging out
+    const confirmLogout = window.confirm("Are you sure you want to log out?");
+    
+    if (confirmLogout) {
+      // Use authService for logout
+      authService.logout();
+      setUser(null);
+      console.log("App - User set to null, redirecting to home");
+      window.location.href = '/';
+    }
   };
 
   const handlePasswordReset = (email) => {
@@ -273,14 +370,13 @@ const App = () => {
           onLogout={handleLogout}
           darkMode={darkMode}
           toggleDarkMode={toggleDarkMode}
-          onSearchChange={(e) => setSearchQuery(e.target.value)}
         />
         
         <main className="app-main">
           <Routes>
             <Route path="/" element={
               <>
-                <Hero />
+                <Hero user={user} />
                 <SpecialOffers 
                   onAddToCart={handleAddToCart} 
                   onAddToFavorites={handleAddToFavorites}
@@ -299,16 +395,13 @@ const App = () => {
                 onAddToFavorites={handleAddToFavorites}
                 onRemoveFromFavorites={handleRemoveFromFavorites}
                 isItemFavorite={isItemFavorite}
-                searchQuery={searchQuery}
                 filterCategory={filterCategory}
               />
             } />
             <Route path="/dashboard" element={
-              user ? (
+              <PrivateRoute>
                 <Dashboard user={user} />
-              ) : (
-                <Navigate to="/" replace />
-              )
+              </PrivateRoute>
             } />
             <Route path="/favorites" element={
               <FavoritesPage 

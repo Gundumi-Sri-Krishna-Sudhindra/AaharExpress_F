@@ -12,15 +12,27 @@ const Navbar = ({
   onCartClick, 
   user,
   onLogout,
-  darkMode,
-  onSearchChange
+  darkMode
 }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [isSignupPopupOpen, setIsSignupPopupOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isUserProfileOpen, setIsUserProfileOpen] = useState(false);
   const userMenuRef = useRef(null);
+  const userProfileRef = useRef(null);
+
+  // Debug log to check if user data is being received
+  useEffect(() => {
+    console.log("Navbar received user:", user);
+    
+    // Add a class to the body when user is authenticated
+    if (user) {
+      document.body.classList.add('user-authenticated');
+    } else {
+      document.body.classList.remove('user-authenticated');
+    }
+  }, [user]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,6 +42,9 @@ const Navbar = ({
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setIsUserMenuOpen(false);
+      }
+      if (userProfileRef.current && !userProfileRef.current.contains(event.target)) {
+        setIsUserProfileOpen(false);
       }
     };
     
@@ -50,15 +65,12 @@ const Navbar = ({
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-    if (onSearchChange) {
-      onSearchChange(e);
-    }
-  };
-
   const toggleUserMenu = () => {
     setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const toggleUserProfile = () => {
+    setIsUserProfileOpen(!isUserProfileOpen);
   };
 
   const handleSignInClick = (e) => {
@@ -71,6 +83,27 @@ const Navbar = ({
     e.preventDefault();
     setIsSignupPopupOpen(true);
     setIsUserMenuOpen(false); // Close the user menu
+  };
+
+  const handleLogoutClick = (e) => {
+    e.preventDefault();
+    console.log("Logout clicked");
+    if (onLogout) {
+      onLogout();
+    }
+  };
+
+  // Format user's roles for display
+  const formatRoles = (roles) => {
+    if (!roles || !Array.isArray(roles) || roles.length === 0) {
+      return 'User';
+    }
+    
+    return roles.map(role => {
+      // Remove ROLE_ prefix and capitalize
+      const roleName = role.replace('ROLE_', '').toLowerCase();
+      return roleName.charAt(0).toUpperCase() + roleName.slice(1);
+    }).join(', ');
   };
 
   return (
@@ -96,22 +129,6 @@ const Navbar = ({
           </div>
 
           <div className="navbar-menu">
-            <div className="search-container" style={{ width: '300px' }}>
-              <input
-                type="text"
-                placeholder="Search menu..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="search-input"
-                style={{ 
-                  width: '100%',
-                  padding: '12px 16px',
-                  fontSize: '16px',
-                  borderRadius: '8px'
-                }}
-              />
-            </div>
-
             <div className="nav-links">
               <Link to="/" className="nav-link">Home</Link>
               <Link to="/about" className="nav-link">About Us</Link>
@@ -140,23 +157,78 @@ const Navbar = ({
                 )}
               </button>
 
-              {/* Enhanced User Menu */}
-              <div className="user-menu-container" ref={userMenuRef}>
-                {user ? (
-                  <div className="logged-in-user">
-                    <Link to="/dashboard" className="user-greeting">
-                      <span className="user-greeting-text">Welcome, {user.username}</span>
-                    </Link>
-                    <button 
-                      onClick={onLogout} 
-                      className="logout-button"
-                      aria-label="Logout"
-                    >
-                      <span className="logout-icon">🚪</span>
-                      <span className="logout-text">Logout</span>
-                    </button>
-                  </div>
-                ) : (
+              {/* User Authentication Section */}
+              {user ? (
+                /* Logged in user section */
+                <div className="user-section" ref={userProfileRef}>
+                  <button 
+                    onClick={toggleUserProfile} 
+                    className="nav-link user-greeting"
+                    aria-label="User Profile"
+                    aria-expanded={isUserProfileOpen}
+                  >
+                    <span className="user-avatar">👤</span>
+                    <span className="user-greeting-text">{user.username || 'User'}</span>
+                  </button>
+                  
+                  {isUserProfileOpen && (
+                    <div className="user-profile-dropdown">
+                      <div className="user-profile-header">
+                        <span className="user-profile-avatar">👤</span>
+                        <div className="user-profile-info">
+                          <h3 className="user-profile-name">{user.username || user.name || 'User'}</h3>
+                          {user.email && <p className="user-profile-email">{user.email}</p>}
+                        </div>
+                      </div>
+                      
+                      <div className="user-profile-details">
+                        {user.roles && (
+                          <div className="user-profile-item">
+                            <span className="user-profile-label">Role:</span>
+                            <span className="user-profile-value">{formatRoles(user.roles)}</span>
+                          </div>
+                        )}
+                        
+                        {user.lastLogin && (
+                          <div className="user-profile-item">
+                            <span className="user-profile-label">Last Login:</span>
+                            <span className="user-profile-value">{new Date(user.lastLogin).toLocaleString()}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="user-profile-actions">
+                        <Link to="/dashboard" className="user-profile-action">
+                          <span className="action-icon">📊</span>
+                          Dashboard
+                        </Link>
+                        <Link to="/profile" className="user-profile-action">
+                          <span className="action-icon">⚙️</span>
+                          Settings
+                        </Link>
+                        <button 
+                          onClick={handleLogoutClick} 
+                          className="user-profile-action logout-action"
+                        >
+                          <span className="action-icon">🚪</span>
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <button 
+                    onClick={handleLogoutClick} 
+                    className="logout-button"
+                    aria-label="Logout"
+                  >
+                    <span className="logout-icon">🚪</span>
+                    <span className="logout-text">Logout</span>
+                  </button>
+                </div>
+              ) : (
+                /* Guest user section */
+                <div className="user-menu-container" ref={userMenuRef}>
                   <button 
                     className="user-icon-button" 
                     onClick={toggleUserMenu} 
@@ -165,21 +237,21 @@ const Navbar = ({
                   >
                     <span className="user-icon">👤</span>
                   </button>
-                )}
-                
-                {!user && isUserMenuOpen && (
-                  <div className="user-dropdown-menu">
-                    <a href="#" className="dropdown-item" onClick={handleSignInClick}>
-                      <span className="dropdown-icon">🔑</span>
-                      Sign In
-                    </a>
-                    <a href="#" className="dropdown-item" onClick={handleSignupClick}>
-                      <span className="dropdown-icon">📝</span>
-                      Create Account
-                    </a>
-                  </div>
-                )}
-              </div>
+                  
+                  {isUserMenuOpen && (
+                    <div className="user-dropdown-menu">
+                      <a href="#" className="dropdown-item" onClick={handleSignInClick}>
+                        <span className="dropdown-icon">🔑</span>
+                        Sign In
+                      </a>
+                      <a href="#" className="dropdown-item" onClick={handleSignupClick}>
+                        <span className="dropdown-icon">📝</span>
+                        Create Account
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
