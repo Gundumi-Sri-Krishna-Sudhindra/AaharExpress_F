@@ -24,10 +24,19 @@ const userService = {
         
         console.log('userService: User details fetched successfully:', response.data);
         
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(response.data));
+        // Ensure proper field mapping
+        const userData = {
+          ...response.data,
+          fullName: response.data.fullName || response.data.name || '',
+          mobileNumber: response.data.mobileNumber || response.data.phone || '',
+          address: response.data.address || '',
+          memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString()
+        };
         
-        return response.data;
+        // Store user data in localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        return userData;
       } catch (usernameError) {
         console.error('userService: Error fetching by username:', usernameError);
         
@@ -40,10 +49,19 @@ const userService = {
         
         console.log('userService: User details fetched from /me endpoint:', meResponse.data);
         
-        // Store user data in localStorage
-        localStorage.setItem('user', JSON.stringify(meResponse.data));
+        // Ensure proper field mapping
+        const userData = {
+          ...meResponse.data,
+          fullName: meResponse.data.fullName || meResponse.data.name || '',
+          mobileNumber: meResponse.data.mobileNumber || meResponse.data.phone || '',
+          address: meResponse.data.address || '',
+          memberSince: meResponse.data.memberSince || meResponse.data.createdAt || new Date().toISOString()
+        };
         
-        return meResponse.data;
+        // Store user data in localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        return userData;
       }
     } catch (error) {
       console.error('userService: Failed to fetch user details after login:', error.response?.data || error.message);
@@ -90,10 +108,19 @@ const userService = {
       });
       console.log('userService: User data received:', response.data);
       
-      // Update localStorage with fresh data
-      localStorage.setItem('user', JSON.stringify(response.data));
+      // Ensure proper field mapping
+      const userData = {
+        ...response.data,
+        fullName: response.data.fullName || response.data.name || '',
+        mobileNumber: response.data.mobileNumber || response.data.phone || '',
+        address: response.data.address || '',
+        memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString()
+      };
       
-      return response.data;
+      // Update localStorage with fresh data
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      return userData;
     } catch (error) {
       console.error('userService: Error fetching current user:', error.response?.data || error.message);
       throw error;
@@ -118,10 +145,19 @@ const userService = {
       });
       console.log('userService: User data received:', response.data);
       
-      // Update localStorage with fresh data
-      localStorage.setItem('user', JSON.stringify(response.data));
+      // Ensure proper field mapping
+      const userData = {
+        ...response.data,
+        fullName: response.data.fullName || response.data.name || '',
+        mobileNumber: response.data.mobileNumber || response.data.phone || '',
+        address: response.data.address || '',
+        memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString()
+      };
       
-      return response.data;
+      // Update localStorage with fresh data
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      return userData;
     } catch (error) {
       console.error(`userService: Error fetching user by username (${username}):`, error.response?.data || error.message);
       throw error;
@@ -160,17 +196,34 @@ const userService = {
         throw new Error('No authentication token found');
       }
       
-      const response = await axios.put(`${API_BASE_URL}/users/${userId}`, userData, {
+      // Ensure we're sending the proper field names that match the backend
+      const updatedData = {
+        ...userData,
+        fullName: userData.name || userData.fullName, // Support both name and fullName
+        mobileNumber: userData.phone || userData.mobileNumber, // Support both phone and mobileNumber
+        // Keep address as is since it's the same field name
+      };
+      
+      const response = await axios.put(`${API_BASE_URL}/users/${userId}`, updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       
-      // Update localStorage with fresh data
-      localStorage.setItem('user', JSON.stringify(response.data));
+      // Ensure proper field mapping in the response
+      const responseData = {
+        ...response.data,
+        fullName: response.data.fullName || response.data.name || '',
+        mobileNumber: response.data.mobileNumber || response.data.phone || '',
+        address: response.data.address || '',
+        memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString()
+      };
       
-      return response.data;
+      // Update localStorage with fresh data
+      localStorage.setItem('user', JSON.stringify(responseData));
+      
+      return responseData;
     } catch (error) {
       console.error(`Error updating user profile (${userId}):`, error);
       throw error;
@@ -199,4 +252,4 @@ const userService = {
   }
 };
 
-export default userService; 
+export default userService;

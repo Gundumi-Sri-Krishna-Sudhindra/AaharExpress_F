@@ -169,7 +169,7 @@ const Dashboard = ({ user: initialUser }) => {
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
-        <h1>Welcome, {user.username || user.name || 'User'}!</h1>
+        <h1>Welcome, {user.fullName || user.username || user.name || 'User'}!</h1>
         <p>Manage your account and orders from your personalized dashboard</p>
         <button 
           onClick={() => setDebugMode(!debugMode)} 
@@ -225,20 +225,27 @@ const Dashboard = ({ user: initialUser }) => {
               <span>Email:</span>
               <span>{user.email || 'N/A'}</span>
             </div>
-            {user.name && (
+            <div className="user-info-item">
+              <span>Full Name:</span>
+              <span>{user.fullName || user.name || 'Not provided'}</span>
+            </div>
+            <div className="user-info-item">
+              <span>Phone:</span>
+              <span>{user.mobileNumber || user.phone || 'Not provided'}</span>
+            </div>
+            {user.address && (
               <div className="user-info-item">
-                <span>Name:</span>
-                <span>{user.name}</span>
-              </div>
-            )}
-            {user.phone && (
-              <div className="user-info-item">
-                <span>Phone:</span>
-                <span>{user.phone}</span>
+                <span>Address:</span>
+                <span>{user.address}</span>
               </div>
             )}
             <div className="dashboard-action">
-              <button className="edit-profile-button">Edit Profile</button>
+              <button 
+                className="edit-profile-button"
+                onClick={() => window.location.href = '/account-settings'}
+              >
+                Edit Profile
+              </button>
             </div>
           </div>
         </div>

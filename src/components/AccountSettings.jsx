@@ -23,9 +23,9 @@ const AccountSettings = ({ user: initialUser, onUpdateUser }) => {
     if (initialUser) {
       setUser(initialUser);
       setFormData({
-        name: initialUser.name || '',
+        name: initialUser.fullName || initialUser.name || '',
         email: initialUser.email || '',
-        phone: initialUser.phone || '',
+        phone: initialUser.mobileNumber || initialUser.phone || '',
         address: initialUser.address || '',
         password: '',
         confirmPassword: '',
@@ -52,9 +52,9 @@ const AccountSettings = ({ user: initialUser, onUpdateUser }) => {
     if (!editMode) {
       // Reset form data to current user data when entering edit mode
       setFormData({
-        name: user.name || '',
+        name: user.fullName || user.name || '',
         email: user.email || '',
-        phone: user.phone || '',
+        phone: user.mobileNumber || user.phone || '',
         address: user.address || '',
         password: '',
         confirmPassword: '',
@@ -119,9 +119,9 @@ const AccountSettings = ({ user: initialUser, onUpdateUser }) => {
     setEditMode(false);
     // Reset form data to current user data
     setFormData({
-      name: user.name || '',
+      name: user.fullName || user.name || '',
       email: user.email || '',
-      phone: user.phone || '',
+      phone: user.mobileNumber || user.phone || '',
       address: user.address || '',
       password: '',
       confirmPassword: '',
@@ -274,7 +274,7 @@ const AccountSettings = ({ user: initialUser, onUpdateUser }) => {
                   </div>
                   <div className="info-item">
                     <span className="info-label">Full Name:</span>
-                    <span className="info-value">{user.name || 'Not provided'}</span>
+                    <span className="info-value">{user.fullName || user.name || 'Not provided'}</span>
                   </div>
                   <div className="info-item">
                     <span className="info-label">Email:</span>
@@ -282,7 +282,7 @@ const AccountSettings = ({ user: initialUser, onUpdateUser }) => {
                   </div>
                   <div className="info-item">
                     <span className="info-label">Phone:</span>
-                    <span className="info-value">{user.phone || 'Not provided'}</span>
+                    <span className="info-value">{user.mobileNumber || user.phone || 'Not provided'}</span>
                   </div>
                   <div className="info-item">
                     <span className="info-label">Address:</span>
@@ -290,7 +290,7 @@ const AccountSettings = ({ user: initialUser, onUpdateUser }) => {
                   </div>
                   <div className="info-item">
                     <span className="info-label">Member Since:</span>
-                    <span className="info-value">{formatDate(user.createdAt || user.memberSince)}</span>
+                    <span className="info-value">{formatDate(user.memberSince || user.createdAt)}</span>
                   </div>
                 </div>
               )}

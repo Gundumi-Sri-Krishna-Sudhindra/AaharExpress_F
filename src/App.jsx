@@ -62,6 +62,52 @@ const App = () => {
     console.log("App - User state changed:", user);
   }, [user]);
 
+  // Migrate user data in localStorage to new format if needed
+  useEffect(() => {
+    const migrateUserData = () => {
+      console.log('Checking if user data needs migration');
+      const savedUserStr = localStorage.getItem('user');
+      if (savedUserStr) {
+        try {
+          const savedUser = JSON.parse(savedUserStr);
+          let needsMigration = false;
+          
+          // Check if we need to migrate fields
+          if (savedUser.name && !savedUser.fullName) {
+            savedUser.fullName = savedUser.name;
+            needsMigration = true;
+          }
+          
+          if (savedUser.phone && !savedUser.mobileNumber) {
+            savedUser.mobileNumber = savedUser.phone;
+            needsMigration = true;
+          }
+          
+          if (!savedUser.memberSince) {
+            savedUser.memberSince = savedUser.createdAt || new Date().toISOString();
+            needsMigration = true;
+          }
+          
+          // Save migrated data
+          if (needsMigration) {
+            console.log('Migrating user data to new format');
+            localStorage.setItem('user', JSON.stringify(savedUser));
+            
+            // Update the user state in memory if we're logged in
+            if (authService.isAuthenticated()) {
+              console.log('Updating in-memory user state with migrated data');
+              setUser(savedUser);
+            }
+          }
+        } catch (error) {
+          console.error("Error migrating user data:", error);
+        }
+      }
+    };
+    
+    migrateUserData();
+  }, []);
+
   // Check authentication status and load data from localStorage
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
@@ -74,7 +120,29 @@ const App = () => {
         try {
           const userData = JSON.parse(savedUser);
           console.log('Found user data in localStorage:', userData.username);
-          setUser(userData);
+          
+          // Ensure the user data has the new field names
+          const updatedUserData = {
+            ...userData,
+            fullName: userData.fullName || userData.name || '',
+            mobileNumber: userData.mobileNumber || userData.phone || '',
+            address: userData.address || '',
+            memberSince: userData.memberSince || userData.createdAt || new Date().toISOString()
+          };
+          
+          // Check if we needed to update any fields
+          const needsUpdate = 
+            (!userData.fullName && userData.name) || 
+            (!userData.mobileNumber && userData.phone) || 
+            (!userData.memberSince && userData.createdAt);
+            
+          if (needsUpdate) {
+            console.log('Updating user data with new field names');
+            localStorage.setItem('user', JSON.stringify(updatedUserData));
+          }
+          
+          // Set the user state with the updated data
+          setUser(updatedUserData);
         } catch (error) {
           console.error("Error parsing saved user:", error);
           // Clear corrupted user data
@@ -89,9 +157,19 @@ const App = () => {
           // Try to get user data from API
           const userData = await userService.getCurrentUser();
           console.log('User data loaded successfully from API:', userData);
-          setUser(userData);
+          
+          // Ensure the API data has all the required fields with proper mapping
+          const updatedUserData = {
+            ...userData,
+            fullName: userData.fullName || userData.name || '',
+            mobileNumber: userData.mobileNumber || userData.phone || '',
+            address: userData.address || '',
+            memberSince: userData.memberSince || userData.createdAt || new Date().toISOString()
+          };
+          
+          setUser(updatedUserData);
           // Update localStorage with fresh data
-          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('user', JSON.stringify(updatedUserData));
         } catch (error) {
           console.error("Failed to fetch user data from API:", error);
           // If API call fails but we have user data from localStorage, keep using that
@@ -302,6 +380,10 @@ const App = () => {
             id: response.id || 0,
             username: response.username,
             email: response.email || '',
+            fullName: response.fullName || '',
+            mobileNumber: response.mobileNumber || '',
+            address: response.address || '',
+            memberSince: response.memberSince || new Date().toISOString(),
             roles: response.roles || ['ROLE_USER']
           };
           

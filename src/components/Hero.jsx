@@ -34,7 +34,7 @@ const Hero = ({ user }) => {
             {user ? (
               <div className="welcome-message">
                 <h1 className="hero-title">
-                  Welcome back, <span className="highlight">{user.username || user.name || 'User'}</span>!
+                  Welcome back, <span className="highlight">{user.fullName || user.username || user.name || 'User'}</span>!
                 </h1>
                 
                 <div className="user-details">

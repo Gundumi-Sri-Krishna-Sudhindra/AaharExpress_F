@@ -168,7 +168,7 @@ const Navbar = ({
                     aria-expanded={isUserProfileOpen}
                   >
                     <span className="user-avatar">👤</span>
-                    <span className="user-greeting-text">{user.username || 'User'}</span>
+                    <span className="user-greeting-text">{user.fullName || user.username || user.name || 'User'}</span>
                   </button>
                   
                   {isUserProfileOpen && (
@@ -176,7 +176,7 @@ const Navbar = ({
                       <div className="user-profile-header">
                         <span className="user-profile-avatar">👤</span>
                         <div className="user-profile-info">
-                          <h3 className="user-profile-name">{user.username || user.name || 'User'}</h3>
+                          <h3 className="user-profile-name">{user.fullName || user.username || user.name || 'User'}</h3>
                           {user.email && <p className="user-profile-email">{user.email}</p>}
                         </div>
                       </div>

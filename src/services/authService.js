@@ -36,6 +36,10 @@ const authService = {
           id: response.data.id || 0,
           username: response.data.username,
           email: response.data.email || '',
+          fullName: response.data.fullName || response.data.name || '',
+          mobileNumber: response.data.mobileNumber || response.data.phone || '',
+          address: response.data.address || '',
+          memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString(),
           roles: response.data.roles || []
         };
         
@@ -145,9 +149,23 @@ const authService = {
     // Validate that user data is proper JSON
     try {
       const userData = JSON.parse(userStr);
-      if (!userData || !userData.username) {
-        console.log('isAuthenticated check: false - invalid user data');
+      // Accept either username or id as valid identifiers
+      if (!userData || (!userData.username && !userData.id)) {
+        console.log('isAuthenticated check: false - missing required user identifiers');
         return false;
+      }
+      
+      // Silently migrate user data format if needed
+      if (userData.name && !userData.fullName) {
+        userData.fullName = userData.name;
+      }
+      if (userData.phone && !userData.mobileNumber) {
+        userData.mobileNumber = userData.phone;
+      }
+      // Save migrated data
+      if ((userData.name && !userData.fullName) || (userData.phone && !userData.mobileNumber)) {
+        localStorage.setItem('user', JSON.stringify(userData));
+        console.log('isAuthenticated: migrated user data format');
       }
       
       console.log('isAuthenticated check: true - valid token and user data');
@@ -237,6 +255,10 @@ const authService = {
         id: 0,
         username: 'user',
         email: 'user@example.com',
+        fullName: '',
+        mobileNumber: '',
+        address: '',
+        memberSince: new Date().toISOString(),
         roles: ['ROLE_USER']
       };
       
@@ -253,10 +275,34 @@ const authService = {
     try {
       // Check if user data is valid JSON
       const userData = JSON.parse(userStr);
+      let isUpdated = false;
+      
+      // Fix required fields if missing
       if (!userData.username) {
-        console.log('User data exists but is invalid, fixing it');
+        console.log('Username missing, adding default');
         userData.username = 'user';
+        isUpdated = true;
+      }
+      
+      // Ensure new fields exist
+      if (!userData.fullName && userData.name) {
+        userData.fullName = userData.name;
+        isUpdated = true;
+      }
+      
+      if (!userData.mobileNumber && userData.phone) {
+        userData.mobileNumber = userData.phone;
+        isUpdated = true;
+      }
+      
+      if (!userData.memberSince) {
+        userData.memberSince = new Date().toISOString();
+        isUpdated = true;
+      }
+      
+      if (isUpdated) {
         localStorage.setItem('user', JSON.stringify(userData));
+        console.log('Updated user data with new field format');
       }
       
       // Ensure Authorization header is set

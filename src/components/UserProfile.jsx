@@ -30,10 +30,10 @@ const UserProfile = ({ user, orders, onViewOrder }) => {
   };
 
   // Safely access user properties
-  const userName = user?.name || 'User';
+  const userName = user?.fullName || user?.name || 'User';
   const userEmail = user?.email || 'No email provided';
   const userMemberSince = user?.memberSince || new Date().toISOString();
-  const userPhone = user?.phone || 'Not provided';
+  const userPhone = user?.mobileNumber || user?.phone || 'Not provided';
   const userAddress = user?.address || 'No address saved';
   const userPaymentMethods = user?.paymentMethods || [];
   const userPreferences = user?.preferences || {
