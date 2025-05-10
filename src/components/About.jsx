@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './About.css';
+import PartnerRegistration from './PartnerRegistration';
 
-const About = () => {
-  const navigate = useNavigate();
+const About = ({ onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
-  
+  const [showPartnerForm, setShowPartnerForm] = useState(false);
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -56,13 +56,26 @@ const About = () => {
     { label: "Lives Impacted", value: "250K+", emoji: "❤️" }
   ];
 
+  const handleBecomePartner = () => {
+    setShowPartnerForm(true);
+  };
+
+  const handleClosePartnerForm = () => {
+    setShowPartnerForm(false);
+  };
+
+  // Replace these placeholder URLs with your actual App Store and Play Store links
+  const appStoreLink = "https://apps.apple.com/";
+  const playStoreLink = "https://play.google.com/store";
+
   return (
     <div className={`about-container ${isVisible ? 'visible' : ''}`}>
-      <button className="close-btn" onClick={() => navigate('/')}>✖</button>
-      
+      {/* Changed from navigate to onClose prop */}
+      <button className="close-btn" onClick={onClose}>✖</button>
+
       <div className="header">
         <div className="logo-container">
-          <span className="logo-emoji">🍱</span>
+          <span className="logo-emoji">🚀🥗</span>
           <h1>AaharExpress</h1>
         </div>
         <p className="tagline">Delicious meals delivered, leftover food repurposed.</p>
@@ -77,7 +90,7 @@ const About = () => {
           Through our innovative platform, we enable customers to enjoy premium food delivery while making it easy to donate meals or contribute leftover food to community members in need.
         </p>
       </section>
-      
+
       <div className="stats-banner">
         {impactStats.map((stat, index) => (
           <div key={index} className="stat-item">
@@ -101,7 +114,7 @@ const About = () => {
           ))}
         </div>
       </section>
-      
+
       <section className="impact-section">
         <h2>Making A Difference</h2>
         <div className="impact-content">
@@ -115,23 +128,36 @@ const About = () => {
           </div>
         </div>
       </section>
-      
+
       <section className="mission-box">
         <h2>Join The Movement</h2>
         <p>Help us create a world where everyone has access to good food and nothing goes to waste.</p>
         <div className="cta-buttons">
           <button className="join-btn primary">Order & Donate</button>
-          <button className="join-btn secondary">Become a Partner</button>
+          <button className="join-btn secondary" onClick={handleBecomePartner}>Become a Partner</button>
         </div>
       </section>
 
       <footer className="app-download">
         <p>Get AaharExpress on your device</p>
         <div className="app-buttons">
-          <button className="app-btn">App Store</button>
-          <button className="app-btn">Play Store</button>
+          <a href={appStoreLink} target="_blank" rel="noopener noreferrer">
+            <button className="app-btn">App Store</button>
+          </a>
+          <a href={playStoreLink} target="_blank" rel="noopener noreferrer">
+            <button className="app-btn">Play Store</button>
+          </a>
         </div>
       </footer>
+
+      {/* Partner Registration Popup */}
+      {showPartnerForm && (
+        <div className="popup-overlay">
+          <div className="popup-container">
+            <PartnerRegistration onClose={handleClosePartnerForm} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
