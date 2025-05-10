@@ -26,6 +26,7 @@ import './App.css';
 import axios from 'axios';
 import userService from './services/userService';
 import authService from './services/authService';
+import RoleDebugger from './components/RoleDebugger';
 
 // Add a PrivateRoute component for protected routes
 const PrivateRoute = ({ children }) => {
@@ -487,6 +488,13 @@ const App = () => {
             <Route path="/dashboard" element={
               <PrivateRoute>
                 <Dashboard user={user} />
+              </PrivateRoute>
+            } />
+            
+            {/* Role debugger tool */}
+            <Route path="/role-debug" element={
+              <PrivateRoute>
+                <RoleDebugger />
               </PrivateRoute>
             } />
             

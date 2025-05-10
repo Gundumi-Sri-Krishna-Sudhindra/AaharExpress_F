@@ -202,6 +202,10 @@ const Navbar = ({
                           <span className="action-icon">📊</span>
                           Dashboard
                         </Link>
+                        <Link to="/role-debug" className="user-profile-action">
+                          <span className="action-icon">🔑</span>
+                          Role Manager
+                        </Link>
                         <Link to="/account-settings" className="user-profile-action">
                           <span className="action-icon">⚙️</span>
                           Settings

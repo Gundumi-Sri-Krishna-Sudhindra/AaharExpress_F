@@ -31,6 +31,25 @@ const authService = {
       if (response.data.accessToken) {
         localStorage.setItem('token', response.data.accessToken);
         
+        // Format roles properly with ROLE_ prefix
+        let roles = [];
+        if (response.data.roles) {
+          roles = Array.isArray(response.data.roles) 
+            ? response.data.roles 
+            : [response.data.roles];
+            
+          // Normalize roles
+          roles = roles.map(role => {
+            if (typeof role !== 'string') return 'ROLE_CUSTOMER';
+            const upperRole = role.toUpperCase();
+            return upperRole.startsWith('ROLE_') ? upperRole : `ROLE_${upperRole}`;
+          });
+        } else {
+          roles = ['ROLE_CUSTOMER']; // Default role
+        }
+        
+        console.log('Normalized roles from login:', roles);
+        
         // Also store basic user data from the response
         const userData = {
           id: response.data.id || 0,
@@ -40,7 +59,7 @@ const authService = {
           mobileNumber: response.data.mobileNumber || response.data.phone || '',
           address: response.data.address || '',
           memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString(),
-          roles: response.data.roles || []
+          roles: roles
         };
         
         // Store user data in localStorage
@@ -378,6 +397,47 @@ const authService = {
       return true;
     } catch (error) {
       console.error('Error fixing authentication state:', error);
+      return false;
+    }
+  },
+  
+  // Normalize roles for consistent handling
+  normalizeRoles: (roles) => {
+    if (!roles || !Array.isArray(roles)) {
+      return ['ROLE_CUSTOMER']; // Default to customer role if no roles provided
+    }
+    
+    return roles.map(role => {
+      if (typeof role !== 'string') return 'ROLE_CUSTOMER'; // Default for non-string values
+      
+      // Standardize role string
+      const upperRole = role.trim().toUpperCase();
+      
+      // Add ROLE_ prefix if not present
+      if (!upperRole.startsWith('ROLE_')) {
+        return `ROLE_${upperRole}`;
+      }
+      
+      return upperRole;
+    });
+  },
+  
+  // Update user roles in localStorage
+  updateUserRoles: (roles) => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return false;
+      
+      const userData = JSON.parse(userStr);
+      const normalizedRoles = authService.normalizeRoles(roles);
+      
+      userData.roles = normalizedRoles;
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      console.log('Updated user roles in localStorage:', normalizedRoles);
+      return true;
+    } catch (error) {
+      console.error('Failed to update user roles:', error);
       return false;
     }
   }

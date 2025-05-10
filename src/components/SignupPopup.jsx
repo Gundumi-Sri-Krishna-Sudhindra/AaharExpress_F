@@ -27,12 +27,16 @@ const SignupPopup = ({isOpen, onClose, onSignInClick}) => {
             setSignupSuccess("");
             setSignupError("");
             
+            // Format the role with ROLE_ prefix
+            const role = values.role.toUpperCase();
+            const formattedRole = role.startsWith('ROLE_') ? role : `ROLE_${role}`;
+            
             // Create the API request payload that matches the backend SignupRequest structure
             const signupData = {
                 username: values.username,
                 email: values.email,
                 password: values.password,
-                role: [values.role] // Keep it as an array for now
+                role: [formattedRole] // Send properly formatted role
             };
     
             console.log('Sending signup data:', signupData);

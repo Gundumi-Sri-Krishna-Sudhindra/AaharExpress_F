@@ -52,6 +52,31 @@ const Popup = ({isOpen, onClose, onLogin}) => {
             const response = await authService.login(values.username, values.password);
             console.log('Popup: Login successful, response:', response);
 
+            // Step 2: Ensure roles are properly formatted
+            if (response.roles) {
+                const formattedRoles = Array.isArray(response.roles) 
+                    ? response.roles.map(role => {
+                        const upperRole = typeof role === 'string' ? role.toUpperCase() : '';
+                        return upperRole.startsWith('ROLE_') ? upperRole : `ROLE_${upperRole}`;
+                      })
+                    : [`ROLE_${response.roles.toString().toUpperCase()}`];
+                
+                console.log('Popup: Formatted roles:', formattedRoles);
+                
+                // Update user data in localStorage with formatted roles
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                    try {
+                        const userData = JSON.parse(userStr);
+                        userData.roles = formattedRoles;
+                        localStorage.setItem('user', JSON.stringify(userData));
+                        console.log('Popup: Updated user data with formatted roles');
+                    } catch (error) {
+                        console.error('Popup: Error updating user roles:', error);
+                    }
+                }
+            }
+
             // Show success message
             setLoginSuccess('✅ Successfully signed in! Loading your profile...');
             console.log('Popup: Login success message set');

@@ -3,6 +3,52 @@ import authService from './authService';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
+// Helper function to normalize roles
+const normalizeRoles = (rolesData) => {
+  if (!rolesData) return ['ROLE_CUSTOMER']; // Default role
+  
+  // If it's already an array, format each role
+  if (Array.isArray(rolesData)) {
+    return rolesData.map(role => {
+      if (typeof role !== 'string') return 'ROLE_CUSTOMER';
+      const upperRole = role.toUpperCase();
+      return upperRole.startsWith('ROLE_') ? upperRole : `ROLE_${upperRole}`;
+    });
+  }
+  
+  // If it's a string, split by comma and format
+  if (typeof rolesData === 'string') {
+    return rolesData.split(',').map(role => {
+      const upperRole = role.trim().toUpperCase();
+      return upperRole.startsWith('ROLE_') ? upperRole : `ROLE_${upperRole}`;
+    });
+  }
+  
+  // Unknown format, return default
+  return ['ROLE_CUSTOMER'];
+};
+
+// Helper function to ensure user data has all required fields and properly formatted roles
+const formatUserData = (userData) => {
+  // Format roles properly
+  const roles = normalizeRoles(userData.roles);
+  
+  // Create a properly formatted user object
+  return {
+    ...userData,
+    id: userData.id || 0,
+    username: userData.username || '',
+    email: userData.email || '',
+    fullName: userData.fullName || userData.name || '',
+    mobileNumber: userData.mobileNumber || userData.phone || '',
+    address: userData.address || '',
+    memberSince: userData.memberSince || userData.createdAt || new Date().toISOString(),
+    roles: roles,
+    // Add any other fields that might come from your backend
+    restaurantName: userData.restaurantName || ''
+  };
+};
+
 const userService = {
   // Fetch user details after successful login
   fetchUserAfterLogin: async (username) => {
@@ -24,14 +70,8 @@ const userService = {
         
         console.log('userService: User details fetched successfully:', response.data);
         
-        // Ensure proper field mapping
-        const userData = {
-          ...response.data,
-          fullName: response.data.fullName || response.data.name || '',
-          mobileNumber: response.data.mobileNumber || response.data.phone || '',
-          address: response.data.address || '',
-          memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString()
-        };
+        // Format user data
+        const userData = formatUserData(response.data);
         
         // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify(userData));
@@ -49,14 +89,8 @@ const userService = {
         
         console.log('userService: User details fetched from /me endpoint:', meResponse.data);
         
-        // Ensure proper field mapping
-        const userData = {
-          ...meResponse.data,
-          fullName: meResponse.data.fullName || meResponse.data.name || '',
-          mobileNumber: meResponse.data.mobileNumber || meResponse.data.phone || '',
-          address: meResponse.data.address || '',
-          memberSince: meResponse.data.memberSince || meResponse.data.createdAt || new Date().toISOString()
-        };
+        // Format user data
+        const userData = formatUserData(meResponse.data);
         
         // Store user data in localStorage
         localStorage.setItem('user', JSON.stringify(userData));
@@ -108,14 +142,8 @@ const userService = {
       });
       console.log('userService: User data received:', response.data);
       
-      // Ensure proper field mapping
-      const userData = {
-        ...response.data,
-        fullName: response.data.fullName || response.data.name || '',
-        mobileNumber: response.data.mobileNumber || response.data.phone || '',
-        address: response.data.address || '',
-        memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString()
-      };
+      // Format user data
+      const userData = formatUserData(response.data);
       
       // Update localStorage with fresh data
       localStorage.setItem('user', JSON.stringify(userData));
@@ -145,14 +173,8 @@ const userService = {
       });
       console.log('userService: User data received:', response.data);
       
-      // Ensure proper field mapping
-      const userData = {
-        ...response.data,
-        fullName: response.data.fullName || response.data.name || '',
-        mobileNumber: response.data.mobileNumber || response.data.phone || '',
-        address: response.data.address || '',
-        memberSince: response.data.memberSince || response.data.createdAt || new Date().toISOString()
-      };
+      // Format user data
+      const userData = formatUserData(response.data);
       
       // Update localStorage with fresh data
       localStorage.setItem('user', JSON.stringify(userData));
