@@ -3,7 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import './popup.css';
 import logo from '/logo.webp';
 import SignupPopup from './SignupPopup';
-import PasswordResetPopup from './PasswordResetPopup';
+import ForgotPassword from './ForgotPassword';
 import { loginSchema } from '../utils/validationSchemas';
 import axios from 'axios';
 import userService from '../services/userService';
@@ -256,7 +256,7 @@ const Popup = ({isOpen, onClose, onLogin}) => {
             )}
 
             {showPasswordReset && (
-                <PasswordResetPopup 
+                <ForgotPassword
                     isOpen={showPasswordReset}
                     onClose={onClose}
                     onBackToSignIn={handleSigninClick}

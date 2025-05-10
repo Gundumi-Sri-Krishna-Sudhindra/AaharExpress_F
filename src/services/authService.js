@@ -440,6 +440,22 @@ const authService = {
       console.error('Failed to update user roles:', error);
       return false;
     }
+  },
+  
+  // Add this function to the authService object
+  forgotPassword: async (email) => {
+    try {
+      console.log('Requesting password reset for:', email);
+      const response = await axios.post(`${API_BASE_URL}/auth/forgot-password`, null, {
+        params: { email }
+      });
+      
+      console.log('Forgot password response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Forgot password error:', error.response?.data || error.message);
+      throw error;
+    }
   }
 };
 

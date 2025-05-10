@@ -18,7 +18,7 @@ import Testimonials from './components/Testimonials';
 import SpecialOffers from './components/SpecialOffers';
 import Newsletter from './components/Newsletter';
 
-import PasswordResetPopup from './components/PasswordResetPopup';
+import ForgotPassword from './components/ForgotPassword';
 import MenuPage from './components/MenuPage';
 import ContactUsPopup from './components/ContactUsPopup';
 import FavoritesPage from './components/FavoritesPage';
@@ -420,11 +420,16 @@ const App = () => {
     }
   };
 
-  const handlePasswordReset = (email) => {
-    // Implement password reset logic here
-    console.log("Password reset requested for:", email);
-    setIsPasswordResetOpen(false);
-    // Could show a confirmation message or redirect
+  const handlePasswordReset = async (email) => {
+    try {
+      await authService.forgotPassword(email);
+      alert("A temporary password has been sent to your email address.");
+      setIsPasswordResetOpen(false);
+      setIsAuthModalOpen(true); // Return to login page
+    } catch (error) {
+      console.error("Password reset failed:", error);
+      alert("Password reset failed. Please try again.");
+    }
   };
 
   const toggleDarkMode = () => {
@@ -602,16 +607,13 @@ const App = () => {
           }}
         />
 
-        
-
-        <PasswordResetPopup
+        <ForgotPassword
           isOpen={isPasswordResetOpen}
           onClose={() => setIsPasswordResetOpen(false)}
           onBackToSignIn={() => {
             setIsPasswordResetOpen(false);
             setIsAuthModalOpen(true);
           }}
-          onSubmit={handlePasswordReset}
         />
         
         <ContactUsPopup
