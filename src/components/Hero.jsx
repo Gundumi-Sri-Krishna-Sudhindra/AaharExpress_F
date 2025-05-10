@@ -81,8 +81,8 @@ const Hero = ({ user }) => {
                 <button className="hero-btn">Explore Menu</button>
               </Link>
               {user && (
-                <Link to="/dashboard">
-                  <button className="hero-btn dashboard-btn">Go to Dashboard</button>
+                <Link to="/account-settings">
+                  <button className="hero-btn dashboard-btn">Account Settings</button>
                 </Link>
               )}
               <div className="stats">

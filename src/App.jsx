@@ -11,6 +11,7 @@ import Checkout from './components/Checkout';
 import OrderTracking from './components/OrderTracking';
 import Dashboard from './components/Dashboard';
 import UserProfile from './components/UserProfile';
+import AccountSettings from './components/AccountSettings';
 
 import Testimonials from './components/Testimonials';
 import SpecialOffers from './components/SpecialOffers';
@@ -435,6 +436,14 @@ const App = () => {
               ) : (
                 <Navigate to="/" replace />
               )
+            } />
+            <Route path="/account-settings" element={
+              <PrivateRoute>
+                <AccountSettings 
+                  user={user}
+                  onUpdateUser={(updatedUser) => setUser(updatedUser)}
+                />
+              </PrivateRoute>
             } />
           </Routes>
         </main>

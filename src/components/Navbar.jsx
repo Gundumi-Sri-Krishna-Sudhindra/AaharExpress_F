@@ -202,7 +202,7 @@ const Navbar = ({
                           <span className="action-icon">📊</span>
                           Dashboard
                         </Link>
-                        <Link to="/profile" className="user-profile-action">
+                        <Link to="/account-settings" className="user-profile-action">
                           <span className="action-icon">⚙️</span>
                           Settings
                         </Link>
