@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://storied-puppy-a42d38.netlify.app/.netlify/functions';
+// Use a CORS proxy
+const API_BASE_URL = 'https://cors-anywhere.herokuapp.com/https://storied-puppy-a42d38.netlify.app/api';
 
 // Debug function to log authentication state
 const logAuthState = () => {
@@ -15,11 +16,17 @@ const logAuthState = () => {
   });
 };
 
+// Add this function
+const logApiCall = (method, url, data = null) => {
+  console.log(`API ${method} call to: ${url}`);
+  if (data) console.log('Data:', data);
+};
+
 const authService = {
   // Login user and get token
   login: async (username, password) => {
     try {
-      console.log('Attempting login for:', username);
+      logApiCall('POST', `${API_BASE_URL}/auth/signin`, { username });
       const response = await axios.post(`${API_BASE_URL}/auth/signin`, {
         username,
         password
@@ -76,7 +83,12 @@ const authService = {
       
       return response.data;
     } catch (error) {
-      console.error('Login error:', error.response?.data || error.message);
+      console.error('Login error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
       throw error;
     }
   },

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://storied-puppy-a42d38.netlify.app/.netlify/functions';
+const API_BASE_URL = 'https://storied-puppy-a42d38.netlify.app/api';
 
 // Function to check API endpoints
 const checkApiEndpoints = async () => {

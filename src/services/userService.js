@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_BASE_URL = 'https://storied-puppy-a42d38.netlify.app/.netlify/functions';
+const API_BASE_URL = 'https://storied-puppy-a42d38.netlify.app/api';
 
 // Helper function to normalize roles
 const normalizeRoles = (rolesData) => {
