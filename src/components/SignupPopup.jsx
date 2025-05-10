@@ -1,6 +1,6 @@
 import React, { useState } from 'react'; // Import useState
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import './popup.css';
+import './Popup.css';
 import logo from '/logo.webp';
 import { signupSchema } from '../utils/validationSchemas';
 import axios from 'axios';
@@ -42,7 +42,7 @@ const SignupPopup = ({isOpen, onClose, onSignInClick}) => {
             console.log('Sending signup data:', signupData);
     
             // Make API call to backend with proper headers
-            const response = await axios.post('http://localhost:8080/api/auth/signup', signupData, {
+            const response = await axios.post('https://aahar-express-b.vercel.app/api/auth/signup', signupData, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'

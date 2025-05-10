@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import logo from '/logo.webp';
-import './popup.css';
+import './Popup.css';
 import authService from '../services/authService';
 
 const forgotPasswordSchema = Yup.object().shape({

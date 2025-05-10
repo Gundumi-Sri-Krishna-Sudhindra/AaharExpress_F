@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import logo from '/logo.webp';
-import './popup.css';
+import './Popup.css';
 
 const PasswordResetPopup = ({ isOpen, onClose, onBackToSignIn, onSubmit }) => {
   const [email, setEmail] = useState('');

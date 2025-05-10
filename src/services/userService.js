@@ -1,7 +1,7 @@
 import axios from 'axios';
 import authService from './authService';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://aahar-express-b.vercel.app/api';
 
 // Helper function to normalize roles
 const normalizeRoles = (rolesData) => {
