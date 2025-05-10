@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import './popup.css';
+import './Popup.css';
 import logo from '/logo.webp';
 import SignupPopup from './SignupPopup';
 import ForgotPassword from './ForgotPassword';
