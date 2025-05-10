@@ -42,7 +42,7 @@ const SignupPopup = ({isOpen, onClose, onSignInClick}) => {
             console.log('Sending signup data:', signupData);
     
             // Make API call to backend with proper headers
-            const response = await axios.post('https://storied-puppy-a42d38.netlify.app/api/auth/signup', signupData, {
+            const response = await axios.post('https://storied-puppy-a42d38.netlify.app/.netlify/functions/auth/signup', signupData, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
