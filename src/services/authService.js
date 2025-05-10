@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use a CORS proxy
-const API_BASE_URL = 'https://cors-anywhere.herokuapp.com/https://storied-puppy-a42d38.netlify.app/api';
+const API_BASE_URL = 'https://storied-puppy-a42d38.netlify.app/api';
 
 // Debug function to log authentication state
 const logAuthState = () => {
